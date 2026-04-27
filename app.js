@@ -54,7 +54,7 @@ function objetoReportado() {
 
 
     const newItem = {   // Crea un nuevo objeto perdido con los valores ingresados en el formulario
-    id: lostItems.length + 1, // Genera un ID único basado en la longitud del array
+    id: lostItems.length + 1, //  esto lo que hara es asignar un ID único a cada nuevo objeto perdido basado en la longitud actual del array lostItems, lo que garantiza que cada objeto tenga un identificador distinto.
     estado: "pending",
     date: date,
     room: room,
@@ -64,7 +64,7 @@ function objetoReportado() {
     lostItems.push(newItem) // Agrega el nuevo objeto al array de objetos perdidos
 localStorage.setItem("lostItems", JSON.stringify(lostItems)) // Guarda el array actualizado en localStorage
 
-// Limpia los campos del formulario después de enviar
+// Limpiamos los campos del formulario después de enviar
 inputDescription.value = ""
 traerDate.value = ""
 traerRoom.value = ""
@@ -77,26 +77,57 @@ recorrerLostItems() // Llama a la función para actualizar la lista de objetos p
 
 
 
-const miFormulario = document.getElementById("form") // aqui es el boton de submit del formulario.
+const miFormulario = document.getElementById("form") 
 miFormulario.addEventListener("submit", function(event) {
     event.preventDefault() // para que no se se recarge la página al enviar el formulario
     objetoReportado() // Llama a la función para obtener los valores del formulario y crear el nuevo objeto perdido
 })
 
-// traer la lista de  objetos perdidos e insertarlos en el DOM para mostrarlos en la página.
+
 
 
 function recorrerLostItems() {
-     lostItemsContainer.innerHTML = "" // Limpiar el contenedor antes de mostrar los objetos perdidos actualizados
-     lostItems.length > 0 ? emptyMessage.style.display = "none" : emptyMessage.style.display = "flex" // Mostrar u ocultar el mensaje de estado vacío según si hay objetos perdidos o no.
+    lostItemsContainer.innerHTML = ""
+    lostItems.length > 0 ? emptyMessage.style.display = "none" : emptyMessage.style.display = "flex"
+    
     lostItems.forEach(item => {
-   
+        const lostItemElement = document.createElement("div")
+        lostItemElement.textContent = `ID: ${item.id}, Estado: ${item.estado}, Fecha: ${item.date}, Hab: ${item.room}, Descripción: ${item.description}, Ubicación: ${item.location}`
+        
+        const cancelBtn = document.createElement("button")
+        cancelBtn.textContent = "Cancelar Reporte"
+        cancelBtn.addEventListener("click", () => {
+            cancelarItem(item.id)
+        })
+        const modificarBtn = document.createElement("button")
+modificarBtn.textContent = "Modificar Estado"
+modificarBtn.addEventListener("click", () => {
+    const selectedStatus = document.createElement("select")
+    const options = ["pending", "found", "cancelled"]
+    options.forEach(status => {
+        const option = document.createElement("option")
+        option.value = status
+      option.textContent = status.charAt(0).toUpperCase() + status.slice(1) // Capitaliza la primera letra
+        selectedStatus.appendChild(option)
+    })
+    selectedStatus.value = item.estado // Establece el valor seleccionado al estado actual del item
+    lostItemElement.appendChild(selectedStatus)
+    selectedStatus.addEventListener("change", () => {
+        item.estado = selectedStatus.value // Actualiza el estado del item con el valor seleccionado
+        localStorage.setItem("lostItems", JSON.stringify(lostItems)) // Guarda el array actualizado en localStorage
+        recorrerLostItems() // Actualiza la lista de objetos perdidos mostrada en la página
+    })
+})
 
-    const lostItemElement = document.createElement("p") // Aquí puedes crear elementos HTML para mostrar los objetos perdidos en la página, por ejemplo, un div para cada objeto perdido.
-    lostItemElement.textContent = `ID: ${item.id}, Estado: ${item.estado}, Fecha: ${item.date}, Hab: ${item.room}, Descripción: ${item.description}, Ubicación: ${item.location}`
-    lostItemsContainer.appendChild(lostItemElement)
+lostItemElement.appendChild(modificarBtn)
+        lostItemElement.appendChild(cancelBtn)
+        lostItemsContainer.appendChild(lostItemElement)
     })
 }
 
-
-recorrerLostItems() // Llama a la función para mostrar los objetos perdidos almacenados en localStorage cuando se carga la página por primera vez.
+function cancelarItem(id) {
+    const item = lostItems.find(item => item.id === id)
+    item.estado = "cancelled"
+    localStorage.setItem("lostItems", JSON.stringify(lostItems))
+    recorrerLostItems()
+}
