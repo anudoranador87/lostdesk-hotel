@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LostDesk - Gestión de Objetos Perdidos</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>LostDesk</h1>
+                <p>Gestión de objetos perdidos</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="role-btn active" data-role="reception">
+                    <span class="role-label">🏨 Recepción</span>
+                    <span class="role-desc">Registrar, buscar, cambiar estado</span>
+                </button>
+                <button class="role-btn" data-role="housekeeping">
+                    <span class="role-label">🛏️ Housekeeping</span>
+                    <span class="role-desc">Registrar objetos encontrados</span>
+                </button>
+                <button class="role-btn" data-role="management">
+                    <span class="role-label">📋 Management</span>
+                    <span class="role-desc">Consultar historial completo</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>Rol: <span id="current-role">🏨 Recepción</span></p>
+                <button id="logout-btn" class="logout-btn">🚪 Cerrar sesión</button>
+            </div>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="main">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button id="menu-toggle" class="menu-toggle">☰</button>
+                    <h1>LostDesk</h1>
+                </div>
+                <div class="header-right">
+                    <span id="role-indicator">🏨 Recepción</span>
+                </div>
+            </header>
+
+            <!-- Contenido -->
+            <div class="content">
+                <!-- Estadísticas -->
+                <section class="stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Total</div>
+                        <div class="stat-value" id="stat-total">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Pendientes</div>
+                        <div class="stat-value accent" id="stat-pending">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Reclamados</div>
+                        <div class="stat-value success" id="stat-claimed">0</div>
+                    </div>
+                </section>
+
+                <!-- Búsqueda -->
+                <section class="search-section">
+                    <div class="search-bar">
+                        <input type="text" id="search-input" placeholder="Buscar por habitación, descripción o usuario...">
+                        <button id="clear-search" class="clear-btn" style="display: none;">✕</button>
+                    </div>
+                    <button id="add-btn" class="btn btn-primary">➕ Registrar objeto</button>
+                </section>
+
+                <!-- Filtros -->
+                <section class="filters">
+                    <div class="filter-group">
+                        <label>Tipo:</label>
+                        <select id="filter-type">
+                            <option value="all">Todos</option>
+                            <option value="bag">Bolsa</option>
+                            <option value="box">Caja</option>
+                            <option value="loose">Objeto suelto</option>
+                            <option value="document">Documento</option>
+                            <option value="electronic">Electrónico</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Estado:</label>
+                        <select id="filter-status">
+                            <option value="all">Todos</option>
+                            <option value="pending">Pendiente</option>
+                            <option value="claimed">Reclamado</option>
+                            <option value="shipped">Enviado</option>
+                            <option value="unclaimed">Sin dueño</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Listado -->
+                <section class="objects-section">
+                    <div id="objects-list" class="objects-list"></div>
+                    <div id="empty-state" class="empty-state">No se encontraron objetos</div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Registrar nuevo objeto</h2>
+                <button id="close-modal" class="close-btn">✕</button>
+            </div>
+            <form id="form" class="form">
+                <div class="form-group">
+                    <label>Habitación *</label>
+                    <input type="text" id="form-room" placeholder="Ej: 305" required>
+                </div>
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" id="form-date">
+                </div>
+                <div class="form-group">
+                    <label>Descripción *</label>
+                    <textarea id="form-description" placeholder="Describe el objeto..." rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <select id="form-type">
+                        <option value="loose">Objeto suelto</option>
+                        <option value="bag">Bolsa</option>
+                        <option value="box">Caja</option>
+                        <option value="document">Documento</option>
+                        <option value="electronic">Electrónico</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Ubicación en almacén *</label>
+                    <input type="text" id="form-location" placeholder="Ej: Estante A-3" required>
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select id="form-status">
+                        <option value="pending">Pendiente</option>
+                        <option value="claimed">Reclamado</option>
+                        <option value="shipped">Enviado</option>
+                        <option value="unclaimed">Sin dueño</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Registrado por</label>
+                    <input type="text" id="form-registered-by" placeholder="Tu nombre">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Registrar</button>
+                    <button type="button" id="cancel-btn" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
