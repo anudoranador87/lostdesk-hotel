@@ -455,8 +455,54 @@ body {
     padding: 3rem 1rem;
     color: var(--muted);
 }
+/* ESTILOS PARA LOS OBJETOS PERDIDOS */
 
-/* MODAL */
+.objects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.objects-list > div {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item-room {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.item-estado {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: #f0f0f0;
+}
+
+.item-description {
+    margin: 0;
+    color: #333;
+}
+
+.item-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 0.85rem;
+    color: #888;
+}
 .modal {
     position: fixed;
     inset: 0;
@@ -466,13 +512,18 @@ body {
     justify-content: center;
     padding: 1rem;
 }
-
+.item-estado.Pendiente { background: #FFF3CD; color: #856404; }
+.item-estado.Reclamado { background: #D1E7DD; color: #0A3622; }
+.item-estado.Cancelado { background: #F8D7DA; color: #842029; }
+.item-estado.Entregado { background: #D3D3D3; color: #333; }
 .modal-overlay {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
 }
-
+.objects-list > div button {
+    width: auto;
+}
 .modal-content {
     position: relative;
     background: var(--bg);

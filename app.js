@@ -20,7 +20,11 @@ const cancelButton = document.getElementById("cancel-btn") // Aquí es el botón
 const closemodalButton = document.getElementById("close-modal") // Aquí es el botón para cerrar el modal del formulario, si es que estás usando un modal para el formulario de reporte de objetos perdidos.
 const miModal = document.getElementById("modal") // Aquí es el modal del formulario, si es que estás usando un modal para el formulario de reporte de objetos perdidos.
 const emptyMessage = document.getElementById("empty-state") // Aquí es el elemento donde se mostrará un mensaje si no hay objetos perdidos reportados, por ejemplo, "No se encontraron objetos perdidos." o algo similar.
-
+const statTotal = document.getElementById("stat-total")
+const statPending = document.getElementById("stat-pending")
+const statClaimed = document.getElementById("stat-claimed")
+const traerType = document.getElementById("form-type")
+const traerStatus = document.getElementById("form-status")
 
 // evento de los botones primero el de cancelar para limpiar los campos del formulario y cerrar el modal si es que estás usando uno.
 
@@ -52,15 +56,21 @@ function objetoReportado() {
     const room = traerRoom.value
     const location = traerLocation.value
 
+    
+    if (!description || !date) { // vamos a validar para que al menos se ingrese una descripción y una fecha, ya que son campos importantes para reportar un objeto perdido. Puedes ajustar esta validación según tus necesidades, por ejemplo, si quieres que también se requiera la habitación o la ubicación, puedes agregar esas condiciones aquí.
+        alert("Por favor, rellena al menos la descripción y la fecha.")
+        return 
+    }
 
-    const newItem = {   // Crea un nuevo objeto perdido con los valores ingresados en el formulario
-    id: lostItems.length + 1, //  esto lo que hara es asignar un ID único a cada nuevo objeto perdido basado en la longitud actual del array lostItems, lo que garantiza que cada objeto tenga un identificador distinto.
-    estado: "pending",
+const newItem = {
+    id: Date.now(),
+    estado: traerStatus.value,
+    tipo: traerType.value,
     date: date,
     room: room,
     description: description,
     location: location
-    }
+}
     lostItems.push(newItem) // Agrega el nuevo objeto al array de objetos perdidos
 localStorage.setItem("lostItems", JSON.stringify(lostItems)) // Guarda el array actualizado en localStorage
 
@@ -69,6 +79,8 @@ inputDescription.value = ""
 traerDate.value = ""
 traerRoom.value = ""
 traerLocation.value = ""
+traerType.value = "loose"
+traerStatus.value = "Pendiente"
 recorrerLostItems() // Llama a la función para actualizar la lista de objetos perdidos mostrada en la página
 }
 
@@ -90,10 +102,33 @@ function recorrerLostItems() {
     lostItemsContainer.innerHTML = ""
     lostItems.length > 0 ? emptyMessage.style.display = "none" : emptyMessage.style.display = "flex"
     
+
+    statTotal.textContent = lostItems.length
+    const pendingCount = lostItems.filter(item => item.estado === "Pendiente").length
+    statPending.textContent = pendingCount
+    const claimedCount = lostItems.filter(item => item.estado === "Reclamado").length
+    statClaimed.textContent = claimedCount
+
     lostItems.forEach(item => {
         const lostItemElement = document.createElement("div")
-        lostItemElement.textContent = `ID: ${item.id}, Estado: ${item.estado}, Fecha: ${item.date}, Hab: ${item.room}, Descripción: ${item.description}, Ubicación: ${item.location}`
-        
+        lostItemElement.innerHTML = `
+    <div class="item-header">
+        <span class="item-room">🏨 Hab. ${item.room}</span>
+        <span class="item-estado ${item.estado}">${item.estado}</span>
+    </div>
+    <div class="item-body">
+        <p class="item-description">${item.description}</p>
+        <div class="item-meta">
+            <span>📅 ${item.date}</span>
+            <span>📦 ${item.location}</span>
+            <span>🏷️ ${item.tipo || "Sin tipo"}</span>
+        </div>
+    </div>
+`
+              
+       
+       
+       
         const cancelBtn = document.createElement("button")
         cancelBtn.textContent = "Cancelar Reporte"
         cancelBtn.addEventListener("click", () => {
@@ -101,9 +136,17 @@ function recorrerLostItems() {
         })
         const modificarBtn = document.createElement("button")
 modificarBtn.textContent = "Modificar Estado"
+
+
+
+
 modificarBtn.addEventListener("click", () => {
+    const selectExistente = lostItemElement.querySelector("select")
+if (selectExistente) { // verificamos si ya existe un select dentro
+    selectExistente.remove() // si existe, lo eliminamos para evitar duplicados
+}
     const selectedStatus = document.createElement("select")
-    const options = ["pending", "found", "cancelled"]
+    const options = ["Pendiente", "Reclamado", "Cancelado", "Entregado"]
     options.forEach(status => {
         const option = document.createElement("option")
         option.value = status
@@ -126,8 +169,14 @@ lostItemElement.appendChild(modificarBtn)
 }
 
 function cancelarItem(id) {
-    const item = lostItems.find(item => item.id === id)
-    item.estado = "cancelled"
+    const confirmar = confirm("¿Seguro que quieres eliminar este reporte? Esta acción no se puede deshacer.")
+    if (!confirmar) return
+    
+    const index = lostItems.findIndex(item => item.id === id)
+    lostItems.splice(index, 1)
     localStorage.setItem("lostItems", JSON.stringify(lostItems))
     recorrerLostItems()
 }
+
+
+
